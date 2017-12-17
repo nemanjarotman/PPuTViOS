@@ -13,6 +13,7 @@
 
 #define DESIRED_FREQUENCY 754000000	        /* Tune frequency in Hz */
 #define BANDWIDTH 8    				        /* Bandwidth in Mhz */
+#define LINELEN 50
 
 /**
  * @brief Structure that defines stream controller error
@@ -33,6 +34,14 @@ typedef struct _ChannelInfo
     int16_t audioPid;
     int16_t videoPid;
 }ChannelInfo;
+
+
+typedef struct _ConfigFileInfo{
+    int16_t Frequency;
+    int16_t Bandwidth;
+    int16_t progNumber;
+    t_Module Modul;
+}ConfigFileInfo;
 
 /**
  * @brief Initializes stream controller module
@@ -69,5 +78,12 @@ StreamControllerError channelDown();
  * @return stream controller error code
  */
 StreamControllerError getChannelInfo(ChannelInfo* channelInfo);
+
+/*
+ * @brief Load config file informations for some parameters
+ * @param [in] filename-name of file to be loaded
+ * @return stream contorller error code
+*/
+StreamControllerError getConfigFile(char* filename);
 
 #endif /* __STREAM_CONTROLLER_H__ */

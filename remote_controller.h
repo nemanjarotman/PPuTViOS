@@ -66,4 +66,3 @@ RemoteControllerError registerRemoteControllerCallback(RemoteControllerCallback 
 RemoteControllerError unregisterRemoteControllerCallback(RemoteControllerCallback remoteControllerCallback);
 
 #endif /* __REMOTE_CONTROLLER_H__ */
-
