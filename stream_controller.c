@@ -27,6 +27,8 @@ static pthread_mutex_t demuxMutex = PTHREAD_MUTEX_INITIALIZER;
 
 static void* streamControllerTask();
 static void startChannel(int32_t channelNumber);
+static StreamControllerError getConfigFile(char* filename, ConfigFileInfo* configFileInfo);
+ConfigFileInfo configFile;
 
 
 StreamControllerError streamControllerInit()
@@ -255,7 +257,7 @@ void* streamControllerTask()
 	}
 
 		/* lock to frequency */
-		if(!Tuner_Lock_To_Frequency(DESIRED_FREQUENCY, BANDWIDTH, DVB_T))
+		if(!Tuner_Lock_To_Frequency(configFileInfo.Frequency, configFileInfo.Bandwidth, configFileInfo.Modul))
 		{
 				printf("\n%s: INFO Tuner_Lock_To_Frequency(): %d Hz - success!\n",__FUNCTION__,DESIRED_FREQUENCY);
 		}
@@ -392,7 +394,7 @@ StreamControllerError getConfigFile(char* filename){
 	  FILE* f;
 		char line[LINELEN];
 		char* word;
-		const char delim[2]="-";        //use for break string in series of tokens
+		const char delim[2]="  ";        //use for break string in series of tokens
 
 		if(f=fopen(filename,"r")==NULL){
 		    printf("Error opening file\n");
@@ -402,7 +404,45 @@ StreamControllerError getConfigFile(char* filename){
 		while(fgets(line,LINELEN,f)!=NULL){
 				word=strtok(line,delim);
 
+				if(word=="frequency")
+				if(strcmp(word,"frequency")==0){
+						printf("Print 1\n");
+						word=strtok(NULL,delim);
+   					configFileInfo->Frequency=atoi(word);
+
+				}else if(strcmp(word,"bandwidth")==0){
+						printf("Print 2\n");
+						word=strtok(NULL,delim);
+						configFileInfo->Bandwidth=atoi(word);
+
+				}else if(strcmp(word,"module")==0){
+					printf("Print 3\n");
+					word=strtok(NULL,delim);
+
+
+					if(strcmp(word="DVB_T")){
+							configFileInfo->Modul=0;
+					}else{
+						printf("Print 4\n");
+						return SC_ERROR;
+					}
+
+				}else if(strcmp(word,"program_number")==0){
+					printf("Print 5\n");
+					word=strtok(NULL,delim);
+					configFileInfo->progNumber=atoi(word);
+				}
 		}
 
 return SC_NO_ERROR;
+}
+
+StreamControllerError configFileInfo(){
+		if(configFileInfo("config.ini",&configFile)){
+				printf("Error load file\n");
+
+				return SC_ERROR;
+		}
+
+		return SC_NO_ERROR;
 }

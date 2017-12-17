@@ -29,12 +29,16 @@ static ChannelInfo channelInfo;
 
 int main()
 {
+  if(getConfigFile()){
+      printf("ggwp");
+      return -1;
+  }
     /* initialize remote controller module */
     ERRORCHECK(remoteControllerInit());
-    
+
     /* register remote controller callback */
     ERRORCHECK(registerRemoteControllerCallback(remoteControllerCallback));
-    
+
     /* initialize stream controller module */
     ERRORCHECK(streamControllerInit());
 
@@ -45,7 +49,7 @@ int main()
 		printf("\n%s : ERROR Lock timeout exceeded!\n", __FUNCTION__);
 	}
 	pthread_mutex_unlock(&deinitMutex);
-    
+
     /* unregister remote controller callback */
     ERRORCHECK(unregisterRemoteControllerCallback(remoteControllerCallback));
 
@@ -54,7 +58,7 @@ int main()
 
     /* deinitialize stream controller module */
     ERRORCHECK(streamControllerDeinit());
-  
+
     return 0;
 }
 
@@ -63,7 +67,7 @@ void remoteControllerCallback(uint16_t code, uint16_t type, uint32_t value)
     switch(code)
 	{
 		case KEYCODE_INFO:
-            printf("\nInfo pressed\n");          
+            printf("\nInfo pressed\n");
             if (getChannelInfo(&channelInfo) == SC_NO_ERROR)
             {
                 printf("\n********************* Channel info *********************\n");
@@ -91,4 +95,3 @@ void remoteControllerCallback(uint16_t code, uint16_t type, uint32_t value)
 			printf("\nPress P+, P-, info or exit! \n\n");
 	}
 }
-
