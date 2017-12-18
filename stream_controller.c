@@ -28,7 +28,7 @@ static pthread_mutex_t demuxMutex = PTHREAD_MUTEX_INITIALIZER;
 static void* streamControllerTask();
 static void startChannel(int32_t channelNumber);
 static StreamControllerError getConfigFile(char* filename, ConfigFileInfo* configFileInfo);
-ConfigFileInfo configFile;
+static ConfigFileInfo configFile;
 
 
 StreamControllerError streamControllerInit()
@@ -257,13 +257,13 @@ void* streamControllerTask()
 	}
 
 		/* lock to frequency */
-		if(!Tuner_Lock_To_Frequency(configFileInfo.Frequency, configFileInfo.Bandwidth, configFileInfo.Modul))
+		if(!Tuner_Lock_To_Frequency(configFile.Frequency, configFile.Bandwidth, configFile.Modul))
 		{
-				printf("\n%s: INFO Tuner_Lock_To_Frequency(): %d Hz - success!\n",__FUNCTION__,DESIRED_FREQUENCY);
+				printf("\n%s: INFO Tuner_Lock_To_Frequency(): %d Hz - success!\n",configFile.Frequency);
 		}
 		else
 		{
-				printf("\n%s: ERROR Tuner_Lock_To_Frequency(): %d Hz - fail!\n",__FUNCTION__,DESIRED_FREQUENCY);
+				printf("\n%s: ERROR Tuner_Lock_To_Frequency(): %d Hz - fail!\n",configFile.Frequency);
 				free(patTable);
 				free(pmtTable);
 				Tuner_Deinit();
@@ -390,13 +390,23 @@ int32_t tunerStatusCallback(t_LockStatus status)
 		return 0;
 }
 
-StreamControllerError getConfigFile(char* filename){
-	  FILE* f;
+StreamControllerError loadInfo(){
+	if(getConfigFile("config.ini", &configFile)){
+		printf("Error loading!\n");
+		return SC_ERROR;
+	}
+	programNumber=configFile.programNumber;  
+	return SC_NO_ERROR;
+}
+
+
+StreamControllerError getConfigFile(char* filename, ConfigFileInfo* configFileInfo){
+	  	FILE* f;
 		char line[LINELEN];
 		char* word;
 		const char delim[2]="  ";        //use for break string in series of tokens
 
-		if(f=fopen(filename,"r")==NULL){
+		if((f=fopen(filename,"r"))==NULL){
 		    printf("Error opening file\n");
 				return SC_ERROR;
 		}
@@ -420,8 +430,8 @@ StreamControllerError getConfigFile(char* filename){
 					word=strtok(NULL,delim);
 
 
-					if(strcmp(word="DVB_T")){
-							configFileInfo->Modul=0;
+					if(strcmp(word,"DVB_T")){
+							configFileInfo->Modul=DVB_T;
 					}else{
 						printf("Print 4\n");
 						return SC_ERROR;
@@ -430,19 +440,10 @@ StreamControllerError getConfigFile(char* filename){
 				}else if(strcmp(word,"program_number")==0){
 					printf("Print 5\n");
 					word=strtok(NULL,delim);
-					configFileInfo->progNumber=atoi(word);
+					configFileInfo->programNumber=atoi(word);
 				}
 		}
 
 return SC_NO_ERROR;
 }
 
-StreamControllerError configFileInfo(){
-		if(configFileInfo("config.ini",&configFile)){
-				printf("Error load file\n");
-
-				return SC_ERROR;
-		}
-
-		return SC_NO_ERROR;
-}

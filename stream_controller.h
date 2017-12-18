@@ -39,7 +39,7 @@ typedef struct _ChannelInfo
 typedef struct _ConfigFileInfo{
     int16_t Frequency;
     int16_t Bandwidth;
-    int16_t progNumber;
+    int16_t programNumber;
     t_Module Modul;
 }ConfigFileInfo;
 
@@ -79,11 +79,6 @@ StreamControllerError channelDown();
  */
 StreamControllerError getChannelInfo(ChannelInfo* channelInfo);
 
-/*
- * @brief Load config file informations for some parameters
- * @param [in] filename-name of file to be loaded
- * @return stream contorller error code
-*/
-StreamControllerError getConfigFile(char* filename);
+StreamControllerError loadInfo();
 
 #endif /* __STREAM_CONTROLLER_H__ */
