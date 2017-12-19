@@ -13,7 +13,7 @@
 
 #define DESIRED_FREQUENCY 754000000	        /* Tune frequency in Hz */
 #define BANDWIDTH 8    				        /* Bandwidth in Mhz */
-#define LINELEN 50
+#define LINELEN 100
 
 /**
  * @brief Structure that defines stream controller error

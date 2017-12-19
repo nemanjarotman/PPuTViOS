@@ -29,10 +29,12 @@ static ChannelInfo channelInfo;
 
 int main()
 {
-  /*if(getConfigFile()){
-      printf("ggwp");
-      return -1;
-  }*/
+	if(loadInfo()){
+		printf("info required\n");
+		return -1;
+	}	
+
+
     /* initialize remote controller module */
     ERRORCHECK(remoteControllerInit());
 

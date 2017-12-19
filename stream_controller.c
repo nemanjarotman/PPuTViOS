@@ -26,6 +26,7 @@ static pthread_cond_t demuxCond = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t demuxMutex = PTHREAD_MUTEX_INITIALIZER;
 
 static void* streamControllerTask();
+static void removeSpaces(char* string);
 static void startChannel(int32_t channelNumber);
 static StreamControllerError getConfigFile(char* filename, ConfigFileInfo* configFileInfo);
 static ConfigFileInfo configFile;
@@ -404,30 +405,32 @@ StreamControllerError getConfigFile(char* filename, ConfigFileInfo* configFileIn
 	  	FILE* f;
 		char line[LINELEN];
 		char* word;
-		const char delim[2]="  ";        //use for break string in series of tokens
-
+	       
 		if((f=fopen(filename,"r"))==NULL){
 		    printf("Error opening file\n");
 				return SC_ERROR;
 		}
 
 		while(fgets(line,LINELEN,f)!=NULL){
-				word=strtok(line,delim);
+				word=strtok(line,"-");
+				removeSpaces(word);
 
-				if(word=="frequency")
 				if(strcmp(word,"frequency")==0){
 						printf("Print 1\n");
-						word=strtok(NULL,delim);
-   					configFileInfo->Frequency=atoi(word);
+						word=strtok(NULL,"-");
+						removeSpaces(word);
+   						configFileInfo->Frequency=atoi(word);
 
 				}else if(strcmp(word,"bandwidth")==0){
 						printf("Print 2\n");
-						word=strtok(NULL,delim);
+						word=strtok(NULL,"-");
+						removeSpaces(word);
 						configFileInfo->Bandwidth=atoi(word);
 
 				}else if(strcmp(word,"module")==0){
 					printf("Print 3\n");
-					word=strtok(NULL,delim);
+					word=strtok(NULL,"-");
+					removeSpaces(word);
 
 
 					if(strcmp(word,"DVB_T")){
@@ -439,13 +442,45 @@ StreamControllerError getConfigFile(char* filename, ConfigFileInfo* configFileIn
 
 				}else if(strcmp(word,"program_number")==0){
 					printf("Print 5\n");
-					word=strtok(NULL,delim);
+					word=strtok(NULL,"-");
+					removeSpaces(word);
 					configFileInfo->programNumber=atoi(word);
 				}
 		}
+	fclose(f);
 
 return SC_NO_ERROR;
 }
+
+static void removeSpaces(char* word)
+{
+	int stringLen = strlen(word);
+	int i = 0;
+	int j = 0;
+	int k = stringLen - 1;
+	char* startString = word;
+	char* returnString;
+
+	while (startString[i] == 32)
+	{
+		i++;
+	}
+
+	while ((startString[k] == 32) & (startString[k] != '\0'))
+	{
+		k--;
+	}
+
+	for (j = 0; j < (k - i); j++)
+	{
+		word[j] = startString[j+i];
+	}
+
+	word[k-i+1] = '\0';
+}
+
+
+	
 
 void changeChannelByNumber(int32_t channelNumber){
 		if((channelNumber > -1)&&(channelNumber < patTable->serviceInfoCount)){
