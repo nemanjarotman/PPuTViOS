@@ -354,8 +354,8 @@ int32_t sectionReceivedCallback(uint8_t *buffer)
 				{
 						//printPatTable(patTable);
 						pthread_mutex_lock(&demuxMutex);
-				pthread_cond_signal(&demuxCond);
-				pthread_mutex_unlock(&demuxMutex);
+						pthread_cond_signal(&demuxCond);
+						pthread_mutex_unlock(&demuxMutex);
 
 				}
 		}
@@ -395,7 +395,7 @@ StreamControllerError loadInfo(){
 		printf("Error loading!\n");
 		return SC_ERROR;
 	}
-	programNumber=configFile.programNumber;  
+	programNumber=configFile.programNumber;
 	return SC_NO_ERROR;
 }
 
@@ -447,3 +447,9 @@ StreamControllerError getConfigFile(char* filename, ConfigFileInfo* configFileIn
 return SC_NO_ERROR;
 }
 
+void changeChannelByNumber(int32_t channelNumber){
+		if((channelNumber > -1)&&(channelNumber < patTable->serviceInfoCount)){
+				startChannel(channelNumber);
+		}
+
+}

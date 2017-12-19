@@ -81,4 +81,6 @@ StreamControllerError getChannelInfo(ChannelInfo* channelInfo);
 
 StreamControllerError loadInfo();
 
+void changeChannelByNumber(int32_t changeChannel);
+
 #endif /* __STREAM_CONTROLLER_H__ */
