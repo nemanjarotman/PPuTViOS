@@ -88,6 +88,27 @@ typedef struct _PmtTable
     uint8_t elementaryInfoCount;
 }PmtTable;
 
+
+typedef struct _TdtTable{
+	uint8_t table_id;
+	uint8_t section_syntax_indicator;
+	uint16_t section_length;
+	uint16_t utc;
+	uint8_t month; 
+	uint8_t day;
+	uint8_t year;
+
+}TdtTable
+
+typedef struct _TotTable{
+	uint8_t table_id;
+	uint8_t section_syntax_indicator;
+	uint16_t section_length;
+	uint64_t UTC_time;
+	uint16_t descriptors_loop_length;
+}TotTable;
+	
+	
 /**
  * @brief  Parse PAT header.
  * 
@@ -157,6 +178,9 @@ ParseErrorCode parsePmtTable(const uint8_t* pmtSectionBuffer, PmtTable* pmtTable
  * @return tables error code
  */
 ParseErrorCode printPmtTable(PmtTable* pmtTable);
+
+
+ParseErrorCode parseTdtTable(const uint8_t* tdtSectionBuffer,TdtTable* tdtTable);
 
 #endif /* __TABLES_H__ */
 

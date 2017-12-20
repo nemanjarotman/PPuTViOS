@@ -1,5 +1,6 @@
 #include "tables.h"
 
+
 ParseErrorCode parsePatHeader(const uint8_t* patHeaderBuffer, PatHeader* patHeader)
 {    
     if(patHeaderBuffer==NULL || patHeader==NULL)
@@ -298,3 +299,22 @@ ParseErrorCode printPmtTable(PmtTable* pmtTable)
     
     return TABLES_PARSE_OK;
 }
+
+ParseErrorCode parseTdtTable(const* uint8_t tdtSectionBuffer,TdtTable* tdtTable){
+	uint8_t * currentBufferPosition=NULL;
+	uint16_t parsedLength=0;
+	
+	if(tdtSectionBUffer==NULL || tdtTable==NULL){
+		printf("\n%s : ERROR received parameters are npot ok\n", __FUNCTION__);
+		return TABLES_PARSE_ERROR;
+	}
+	
+	
+	
+
+
+}
+
+
+
+

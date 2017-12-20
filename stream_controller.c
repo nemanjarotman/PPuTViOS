@@ -2,6 +2,7 @@
 
 static PatTable *patTable;
 static PmtTable *pmtTable;
+static TdtTable *tdtTable;
 static pthread_cond_t statusCondition = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t statusMutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -79,6 +80,7 @@ StreamControllerError streamControllerDeinit()
 		/* free allocated memory */
 		free(patTable);
 		free(pmtTable);
+		free(tdtTable);
 
 		/* set isInitialized flag */
 		isInitialized = false;
@@ -217,6 +219,7 @@ void startChannel(int32_t channelNumber)
 		currentChannel.programNumber = channelNumber + 1;
 		currentChannel.audioPid = audioPid;
 		currentChannel.videoPid = videoPid;
+
 }
 
 void* streamControllerTask()
@@ -248,6 +251,8 @@ void* streamControllerTask()
 				printf("\n%s : ERROR Tuner_Init() fail\n", __FUNCTION__);
 				free(patTable);
 				free(pmtTable);
+				free(tdtTable);
+				free(totTable);
 				return (void*) SC_ERROR;
 		}
 
@@ -260,13 +265,15 @@ void* streamControllerTask()
 		/* lock to frequency */
 		if(!Tuner_Lock_To_Frequency(configFile.Frequency, configFile.Bandwidth, configFile.Modul))
 		{
-				printf("\n%s: INFO Tuner_Lock_To_Frequency(): %d Hz - success!\n",configFile.Frequency);
+				printf("\n%s: INFO Tuner_Lock_To_Frequency(): %d Hz - success!\n",__FUNCTION__,configFile.Frequency);
 		}
 		else
 		{
-				printf("\n%s: ERROR Tuner_Lock_To_Frequency(): %d Hz - fail!\n",configFile.Frequency);
+				printf("\n%s: ERROR Tuner_Lock_To_Frequency(): %d Hz - fail!\n",__FUNCTION__,configFile.Frequency);
 				free(patTable);
 				free(pmtTable);
+				free(tdtTable);	
+				free(totTable);
 				Tuner_Deinit();
 				return (void*) SC_ERROR;
 		}
@@ -465,7 +472,7 @@ static void removeSpaces(char* word)
 	{
 		i++;
 	}
-
+	
 	while ((startString[k] == 32) & (startString[k] != '\0'))
 	{
 		k--;
@@ -478,7 +485,6 @@ static void removeSpaces(char* word)
 
 	word[k-i+1] = '\0';
 }
-
 
 	
 
