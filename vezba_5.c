@@ -1,5 +1,6 @@
 #include "remote_controller.h"
 #include "stream_controller.h"
+#include <signal.h>
 
 static inline void textColor(int32_t attr, int32_t fg, int32_t bg)
 {
@@ -26,13 +27,21 @@ static void remoteControllerCallback(uint16_t code, uint16_t type, uint32_t valu
 static pthread_cond_t deinitCond = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t deinitMutex = PTHREAD_MUTEX_INITIALIZER;
 static ChannelInfo channelInfo;
+void inputNumber(uint16_t button);
+void changeChannel(uint16_t channel);
+static int32_t key1=0;
+static int32_t key2=0;
+static int32_t key3=0;
+static int32_t pressedKeys=0;
+int32_t modifyChannel(uint16_t channelNum);
+
 
 int main()
 {
 	if(loadInfo()){
 		printf("info required\n");
 		return -1;
-	}	
+	}
 
 
     /* initialize remote controller module */
@@ -87,50 +96,94 @@ void remoteControllerCallback(uint16_t code, uint16_t type, uint32_t value)
 		    printf("\nCH- pressed\n");
             channelDown();
 			break;
-		/*
-		case KEYCODE_1:
-			printf("CH 1 pressed\n");
-			
-		case KEYCODE_2:
-		
-		case KEYCODE_3:
-		
-		case KEYCODE_4:
-		
-		case KEYCODE_5:
-
-		case KEYCODE_6:
-
-		case KEYCODE_7:
-
-		case KEYCODE_8:
-
-		case KEYCODE_9:
-
-		case KEYCODE_0:
-
-				*/
-
-
-
-
-
-
 		case KEYCODE_EXIT:
 			printf("\nExit pressed\n");
             pthread_mutex_lock(&deinitMutex);
 		    pthread_cond_signal(&deinitCond);
 		    pthread_mutex_unlock(&deinitMutex);
 			break;
-		
-		
-
-	    
-
-
-
-
-
-
+      case KEYCODE_1:
+          printf("\n CH 1 pressed\n");
+          inputNumber(1);
+          break;
+      case KEYCODE_2:
+          printf("\n CH 2 pressed\n");
+          inputNumber(2);
+          break;
+      case KEYCODE_3:
+          printf("\n CH 3 pressed\n");
+          inputNumber(3);
+          break;
+      case KEYCODE_4:
+          printf("\n CH 4 pressed\n");
+          inputNumber(4);
+          break;
+      case KEYCODE_5:
+          printf("\n CH 5 pressed\n");
+          inputNumber(5);
+          break;
+      case KEYCODE_6:
+          printf("\n CH 6 pressed\n");
+          inputNumber(1);
+          break;
+      case KEYCODE_7:
+          printf("\n CH 7 pressed\n");
+          inputNumber(7);
+          break;
+      case KEYCODE_8:
+          printf("\n CH 8 pressed\n");
+          inputNumber(8);
+          break;
+      case KEYCODE_9:
+          printf("\n CH 9 pressed\n");
+          inputNumber(9);
+          break;
+      case KEYCODE_0:
+          printf("\n CH 0 pressed\n");
+          inputNumber(0);
+          break;
+      default:
+          printf("\nPress P+, P-,info or exit!\n\n");
 	}
+}
+
+void inputNumber(uint16_t button){
+
+      if(pressedKeys==0){
+          key1=button;
+          pressedKeys++;
+
+      }else if(pressedKeys==1){
+          key2=button;
+          pressedKeys++;
+      }else if(pressedKeys==2){
+          key3=button;
+          pressedKeys++;
+      }
+
+      printf("\nKey1:%d\n",key1);
+      printf("\nKey2:%d\n",key2);
+      printf("\nKey3:%d\n",key3);
+      printf("\nKeys pressed: %d\n",pressedKeys);
+
+      if(pressedKeys==3){
+          int changedChanel=key1*100+key2*10+key3;
+          changeChannel(modifyChannel(changeChannel));
+          pressedKeys=0;
+      }
+}
+
+void changeChannel(uint16_t channel){
+  if(channel>=0 && channel<=3){
+        changeChannelByNumber(channel);
+  }
+}
+
+int_32 modifyChannel(uint16_t channelNum){
+    int32_t returnValue;
+
+    if(channelNum==0){
+        returnValue=0;
+    }
+return returnValue;
 }

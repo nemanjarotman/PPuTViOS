@@ -31,6 +31,13 @@ static void removeSpaces(char* string);
 static void startChannel(int32_t channelNumber);
 static StreamControllerError getConfigFile(char* filename, ConfigFileInfo* configFileInfo);
 static ConfigFileInfo configFile;
+void inputNumber(uint16_t button);
+void changeChannel(uint16_t channel);
+static int32_t key1=0;
+static int32_t key2=0;
+static int32_t key3=0;
+static int32_t pressedKeys=0;
+
 
 
 StreamControllerError streamControllerInit()
@@ -62,8 +69,8 @@ StreamControllerError streamControllerDeinit()
 		/* free demux filter */
 		Demux_Free_Filter(playerHandle, filterHandle);
 
-	/* remove audio stream */
-	Player_Stream_Remove(playerHandle, sourceHandle, streamHandleA);
+		/* remove audio stream */
+		Player_Stream_Remove(playerHandle, sourceHandle, streamHandleA);
 
 		/* remove video stream */
 		Player_Stream_Remove(playerHandle, sourceHandle, streamHandleV);
@@ -272,7 +279,7 @@ void* streamControllerTask()
 				printf("\n%s: ERROR Tuner_Lock_To_Frequency(): %d Hz - fail!\n",__FUNCTION__,configFile.Frequency);
 				free(patTable);
 				free(pmtTable);
-				free(tdtTable);	
+				free(tdtTable);
 				free(totTable);
 				Tuner_Deinit();
 				return (void*) SC_ERROR;
@@ -409,10 +416,10 @@ StreamControllerError loadInfo(){
 
 
 StreamControllerError getConfigFile(char* filename, ConfigFileInfo* configFileInfo){
-	  	FILE* f;
+	  FILE* f;
 		char line[LINELEN];
 		char* word;
-	       
+
 		if((f=fopen(filename,"r"))==NULL){
 		    printf("Error opening file\n");
 				return SC_ERROR;
@@ -472,7 +479,7 @@ static void removeSpaces(char* word)
 	{
 		i++;
 	}
-	
+
 	while ((startString[k] == 32) & (startString[k] != '\0'))
 	{
 		k--;
@@ -486,7 +493,6 @@ static void removeSpaces(char* word)
 	word[k-i+1] = '\0';
 }
 
-	
 
 void changeChannelByNumber(int32_t channelNumber){
 		if((channelNumber > -1)&&(channelNumber < patTable->serviceInfoCount)){
