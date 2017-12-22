@@ -27,22 +27,43 @@ static void remoteControllerCallback(uint16_t code, uint16_t type, uint32_t valu
 static pthread_cond_t deinitCond = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t deinitMutex = PTHREAD_MUTEX_INITIALIZER;
 static ChannelInfo channelInfo;
+static ConfigFileInfo configFileInfo;
 void inputNumber(uint16_t button);
-void changeChannel(uint16_t channel);
+void changeChannel();
+char varName[10];
 static int32_t key1=0;
 static int32_t key2=0;
 static int32_t key3=0;
 static int32_t pressedKeys=0;
-int32_t modifyChannel(uint16_t channelNum);
+
+int parseConfigFile(char filename[]){
+    FILE *f=NULL;
+    printf("Try to open file %s\n",filename);
+    f=fopen(filename,"r");
+    if(f==NULL)
+      return -1;
+      fscanf(f,"%s %d %s %d %s %d %s %d", varName, &configFileInfo.Frequency,varName,&configFileInfo.Bandwidth,
+                                          varName, &configFileInfo.programNumber,varName,&configFileInfo.Modul);
+      return 0;    
+}
 
 
-int main()
+int main(int argc, char* argv[])
 {
-	if(loadInfo()){
-		printf("info required\n");
-		return -1;
-	}
-
+	int check;
+  if(argc==2){
+    check=parseConfigFile(argv[1]);
+        if(check<0){
+            printf("Can't find config file");
+            return -1;
+        }
+  }else if(argc>2){
+        printf("To mani arguments");
+        return -1;
+  }else{
+        printf("Input argumets");
+  }
+  printf("Frequency: %d\nBandwidth: %d\nProgram_number: %d\nmodule: %d\n", configFileInfo.Frequency,configFileInfo.Bandwidth, configFileInfo.programNumber, init_config.Modul);
 
     /* initialize remote controller module */
     ERRORCHECK(remoteControllerInit());

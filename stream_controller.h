@@ -35,6 +35,12 @@ typedef struct _ChannelInfo
     int16_t videoPid;
 }ChannelInfo;
 
+//struct for tot table
+typedef struct _DateStr{
+    uint8_t years;
+    uint8_t months;
+    uint8_t days;
+}DateStr;
 
 typedef struct _ConfigFileInfo{
     int16_t Frequency;
@@ -82,5 +88,9 @@ StreamControllerError getChannelInfo(ChannelInfo* channelInfo);
 StreamControllerError loadInfo();
 
 void changeChannelByNumber(int32_t changeChannel);
+
+typedef void(*DateCallback)(DateStr* dateStr);
+
+StreamControllerError registerDateCallback(DateCallback dateCallback);
 
 #endif /* __STREAM_CONTROLLER_H__ */

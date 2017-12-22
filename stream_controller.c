@@ -1,8 +1,9 @@
 #include "stream_controller.h"
 
 static PatTable *patTable;
-static PmtTable *pmtTable;
 static TdtTable *tdtTable;
+static PmtTable *pmtTable;
+static totTable *totTable;
 static pthread_cond_t statusCondition = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t statusMutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -19,6 +20,7 @@ static bool changeChannel = false;
 static int16_t programNumber = 0;
 static ChannelInfo currentChannel;
 static bool isInitialized = false;
+static DateCallback dateReceivedCallback=NULL;
 
 static struct timespec lockStatusWaitTime;
 static struct timeval now;
@@ -29,14 +31,10 @@ static pthread_mutex_t demuxMutex = PTHREAD_MUTEX_INITIALIZER;
 static void* streamControllerTask();
 static void removeSpaces(char* string);
 static void startChannel(int32_t channelNumber);
-static StreamControllerError getConfigFile(char* filename, ConfigFileInfo* configFileInfo);
 static ConfigFileInfo configFile;
-void inputNumber(uint16_t button);
-void changeChannel(uint16_t channel);
-static int32_t key1=0;
-static int32_t key2=0;
-static int32_t key3=0;
-static int32_t pressedKeys=0;
+static DateStr startDate;
+static StreamControllerError parseDateTables();
+static bool getDateTable=false;
 
 
 
@@ -88,6 +86,7 @@ StreamControllerError streamControllerDeinit()
 		free(patTable);
 		free(pmtTable);
 		free(tdtTable);
+		free(totTable);
 
 		/* set isInitialized flag */
 		isInitialized = false;
@@ -155,11 +154,10 @@ void startChannel(int32_t channelNumber)
 		Demux_Free_Filter(playerHandle, filterHandle);
 
 		/* set demux filter for receive PMT table of program */
-		if(Demux_Set_Filter(playerHandle, patTable->patServiceInfoArray[channelNumber + 1].pid, 0x02, &filterHandle))
-	{
+		if(Demux_Set_Filter(playerHandle, patTable->patServiceInfoArray[channelNumber + 1].pid, 0x02, &filterHandle)){
 		printf("\n%s : ERROR Demux_Set_Filter() fail\n", __FUNCTION__);
 				return;
-	}
+		}
 
 		/* wait for a PMT table to be parsed*/
 		pthread_mutex_lock(&demuxMutex);
@@ -227,7 +225,11 @@ void startChannel(int32_t channelNumber)
 		currentChannel.audioPid = audioPid;
 		currentChannel.videoPid = videoPid;
 
+			if(getDateTable==false){
+					parseDateTables();
+			}
 }
+
 
 void* streamControllerTask()
 {
@@ -415,7 +417,7 @@ StreamControllerError loadInfo(){
 }
 
 
-StreamControllerError getConfigFile(char* filename, ConfigFileInfo* configFileInfo){
+/*StreamControllerError getConfigFile(char* filename, ConfigFileInfo* configFileInfo){
 	  FILE* f;
 		char line[LINELEN];
 		char* word;
@@ -492,11 +494,14 @@ static void removeSpaces(char* word)
 
 	word[k-i+1] = '\0';
 }
-
+*/
 
 void changeChannelByNumber(int32_t channelNumber){
 		if((channelNumber > -1)&&(channelNumber < patTable->serviceInfoCount)){
 				startChannel(channelNumber);
 		}
+}
+
+StreamControllerError parseDateTables(){
 
 }
