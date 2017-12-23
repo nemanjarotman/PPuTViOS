@@ -36,7 +36,7 @@ static DateStr startDate;
 static StreamControllerError parseDateTables();
 static bool getDateTable=false;
 
-
+//add for loading config.ini
 
 StreamControllerError streamControllerInit()
 {
@@ -338,6 +338,8 @@ void* streamControllerTask()
 		printf("\n%s:ERROR Lock timeout exceeded!\n", __FUNCTION__);
 				free(patTable);
 				free(pmtTable);
+				free(tdtTable);
+				free(totTable);
 		Player_Deinit(playerHandle);
 				Tuner_Deinit();
 				return (void*) SC_ERROR;
@@ -503,5 +505,14 @@ void changeChannelByNumber(int32_t channelNumber){
 }
 
 StreamControllerError parseDateTables(){
+	struct timeval varDate;
+
+	Demux_Free_Filter(playerHandle,filterHandle);
+
+	if(Demux_Free_Filter,playerHandle,0x0014,0x70,&filterHandle)){
+			printf("\n%s:ERROR Demux_Set_Filter() fail\n",__FUNCTION__);
+			return SC_ERROR;
+	}
+	pthread_mutex_lock(&demuxMutex);
 
 }

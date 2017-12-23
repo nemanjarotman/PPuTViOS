@@ -13,7 +13,7 @@
 
 #define DESIRED_FREQUENCY 754000000	        /* Tune frequency in Hz */
 #define BANDWIDTH 8    				        /* Bandwidth in Mhz */
-#define LINELEN 100
+#define LINELEN 50
 
 /**
  * @brief Structure that defines stream controller error
@@ -49,6 +49,11 @@ typedef struct _ConfigFileInfo{
     t_Module Modul;
 }ConfigFileInfo;
 
+typedef struct _DateStr{
+  uint8_t years;
+  uint8_t months;
+  uint8_t seconds;
+}dateStr;
 /**
  * @brief Initializes stream controller module
  *
