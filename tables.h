@@ -5,10 +5,10 @@
 #include <stdint.h>
 #include <string.h>
 
-#define TABLES_MAX_NUMBER_OF_PIDS_IN_PAT    20 	    /* Max number of PMT pids in one PAT table */
+#define TABLES_MAX_NUMBER_OF_PIDS_IN_PAT 20 	    /* Max number of PMT pids in one PAT table */
 #define TABLES_MAX_NUMBER_OF_ELEMENTARY_PID 20       /* Max number of elementary pids in one PMT table */
 #define TABLES_MAX_NUMBER_OF_LOCAL_TIMES_DSC 20
-#define TABLES_MAX_NUMBER_OF_TOT_DSC
+#define TABLES_MAX_NUMBER_OF_TOT_DSC 20
 /**
  * @brief Enumeration of possible tables parser error codes
  */
@@ -95,30 +95,44 @@ typedef struct _TdtTable{
 	uint8_t section_syntax_indicator;
 	uint16_t section_length;
 	uint64_t mjd;
-	uint8_t month;
-	uint8_t day;
-	uint8_t year;
-}TdtTable
+  uint16_t day;
+	uint16_t month;
+  uint16_t year;
+  uint16_t primM;
+  uint16_t primY;
+  uint16_t wday;
+  uint8_t K;
+}TdtTable;
 
 typedef struct _TotTable{
 	uint8_t table_id;
 	uint8_t section_syntax_indicator;
 	uint16_t section_length;
 	uint16_t mjd;
+  uint8_t year;
+  uint8_t month;
+  uint8_t day;
 	uint16_t descriptors_loop_length;
+  localTimeDescriptorReview dsc[TABLES_MAX_NUMBER_OF_TOT_DSC];
+  uint8_t desc_cnt;
 }TotTable;
 
 typedef struct _LocalTimeDescriptor{
-    uint8_t ch1;
-    uint8_t ch2;
-    uint8_t ch3;
+    uint8_t cCh1;
+    uint8_t cCh2;
+    uint8_t cCh3;
     uint8_t region;
-    uint8_t ltPolarity;
-    uint8_t ltHours;
-    uint8_t ltMin;
+    uint8_t lt_polarity;
+    uint8_t lt_hours;
+    uint8_t lt_min;
 }localTimeDescriptor
 
-
+typedef struct _LocalTimeDescriptorReview{
+    uint8_t descriptor_tag;
+    uint8_t descriptor_length;
+    localTimeDescriptor lto_info[TABLES_MAX_NUMBER_OF_LOCAL_TIMES_DSC];
+    uint8_t info_cnt;
+}localTimeDescriptorReview;
 
 /**
  * @brief  Parse PAT header.
