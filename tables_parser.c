@@ -298,3 +298,87 @@ ParseErrorCode printPmtTable(PmtTable* pmtTable)
     
     return TABLES_PARSE_OK;
 }
+
+ParseErrorCode parseTdtTable(const* uint8_t tdtSectionBuffer,TdtTable* tdtTable){
+    uint8_t lower8Bits=0;
+    uint8_t higher8Bits=0;
+    uint16_t all16Bits=0
+
+	  if(tdtSectionBuffer==NULL || tdtTable==NULL){
+        printf("\n%s : ERROR received parameters are npot ok\n", __FUNCTION__);
+		    return TABLES_PARSE_ERROR;
+	  }
+
+    tdtTable->table_id=(uint8_t)* tdtSectionBuffer;
+
+    higher8Bits=(uint8_t) *(tdtSectionBuffer+1);
+    lower8Bits=(uint8_t) *(tdtSectionBuffer+2);
+    all16Bits=(uint16_t) *((higher8Bits<<8)+lower8Bits);
+    tdtTable->all16Bits & 0x0FFF;
+
+    higher8Bits=(uint8_t) *(tdtSectionBuffer+3);
+    lower8Bits=(uint8_t) *(tdtSectionBuffer+4);
+    all16Bits=(uint8_t) *((higher8Bits<<8))+lower8Bits);
+    tdtTable->mjd=all16Bits;
+
+    tdtTable->primY=(int) ((tdtTable->mjd-15078.2)/365.25);
+    tdtTable->primM=(int) ((tdtTable->mjd-14956.1-(int) (tdtTable->primY*365.25))/30.6001);
+
+    if(tdtTable->primM==14 || tdtTable->primM==15){
+        tdtTable->K=1;
+    }else{
+        tdtTable->K=0;
+    }
+
+    tdtTable->primY=tdtTable->primY+tdtTable->K;
+    tdtTable->primM=tdtTable->primM-1 - tdtTable->K*12;
+    tdtTable->day=tdtTable->mjd-14987-(int) (tdtTable->primY*365.25)-(int) (tdtTable->primM*30.6001);
+    tdtTable->year=tdtTable->primY+1900;
+    tdtTable->wday=((tdtTable->mjd+2)%7)+1;
+
+  return TABLES_PARSE_OK;
+}
+
+ParseErrorCode printTdtTable(TdtTable tdtTable){
+
+    if(tdtTable==NULL){
+        printf("\n%s: Error received parameter\n",__FUNCTION__);
+        return TABLES_PARSE_OK;
+    }
+
+    printf("\n********************TDT TABLE SECTION*************************");
+    printf("table_id           |       %d\n",tdtTable->table_id);
+    printf("section_length     |       %d\n",tdtTable->section_length);
+    printf("mjd code           |       %d\n",tdtTable->mjd);
+
+    switch(tdtTable->wday%7){
+        case 1:
+                printf("INFO: Time read from stream: Monday/%hu/%hu \n", tdtTable->primM, tdtTable->year);
+                break;
+        case 2:
+                printf("INFO: Time read from stream: Tuesday/%hu/%hu \n", tdtTable->primM, tdtTable->year);
+                break;
+        case 3:
+                printf("INFO: Time read from stream: Wednesday/%hu/%hu \n", tdtTable->primM, tdtTable->year);
+                break;
+        case 4:
+                printf("INFO: Time read from stream: Thursday/%hu/%hu \n", tdtTable->primM, tdtTable->year);
+                break;
+        case 5:
+                printf("INFO: Time read from stream: Friday/%hu/%hu \n", tdtTable->primM, tdtTable->year);
+                break;
+        case 6:
+                printf("INFO: Time read from stream: Saturday/%hu/%hu \n", tdtTable->primM, tdtTable->year);
+                break;
+        case 7:
+                printf("INFO: Time read from stream: Sunday/%hu/%hu \n", tdtTable->primM, tdtTable->year);
+                break;
+    }
+
+    printf("***************************TDT TABLE SECTION***********************\n", );
+
+return TABLES_PARSE_OK;
+}
+
+
+

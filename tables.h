@@ -88,6 +88,33 @@ typedef struct _PmtTable
     uint8_t elementaryInfoCount;
 }PmtTable;
 
+typedef struct _TdtTable{
+	uint8_t table_id;
+	uint8_t section_syntax_indicator;
+	uint16_t section_length;
+	uint64_t mjd;
+  	uint16_t day;
+	uint16_t month;
+  	uint16_t year;
+  	uint16_t primM;
+  	uint16_t primY;
+  	uint16_t wday;
+  	uint8_t K;
+}TdtTable;
+
+
+typedef struct _TotTable{
+	uint8_t table_id;
+	uint8_t section_syntax_indicator;
+	uint16_t section_length;
+	uint16_t mjd;
+  	uint8_t year;
+  	uint8_t month;
+  	uint8_t day;
+	uint16_t descriptors_loop_length;
+  uint8_t desc_cnt;
+}TotTable;
+
 /**
  * @brief  Parse PAT header.
  * 

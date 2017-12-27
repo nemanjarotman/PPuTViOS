@@ -97,6 +97,7 @@ void* inputEventTask()
 	return (void*)RC_NO_ERROR;
 }
 
+
 int32_t getKey(uint8_t* buf)
 {
     int32_t ret = 0;
