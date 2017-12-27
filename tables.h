@@ -5,10 +5,9 @@
 #include <stdint.h>
 #include <string.h>
 
-#define TABLES_MAX_NUMBER_OF_PIDS_IN_PAT 20 	    /* Max number of PMT pids in one PAT table */
+#define TABLES_MAX_NUMBER_OF_PIDS_IN_PAT    20 	    /* Max number of PMT pids in one PAT table */
 #define TABLES_MAX_NUMBER_OF_ELEMENTARY_PID 20       /* Max number of elementary pids in one PMT table */
-#define TABLES_MAX_NUMBER_OF_LOCAL_TIMES_DSC 20
-#define TABLES_MAX_NUMBER_OF_TOT_DSC 20
+
 /**
  * @brief Enumeration of possible tables parser error codes
  */
@@ -37,7 +36,7 @@ typedef struct _PatHeader
  * @brief Structure that defines PAT service info
  */
 typedef struct _PatServiceInfo
-{
+{    
     uint16_t    programNumber;                      /* Identifies each service present in a transport stream */
     uint16_t    pid;                                /* Pid of Program Map table section or pid of Network Information Table  */
 }PatServiceInfo;
@@ -46,7 +45,7 @@ typedef struct _PatServiceInfo
  * @brief Structure that defines PAT table
  */
 typedef struct _PatTable
-{
+{    
     PatHeader patHeader;                                                     /* PAT Table Header */
     PatServiceInfo patServiceInfoArray[TABLES_MAX_NUMBER_OF_PIDS_IN_PAT];    /* Services info presented in PAT table */
     uint8_t serviceInfoCount;                                                /* Number of services info presented in PAT table */
@@ -89,54 +88,9 @@ typedef struct _PmtTable
     uint8_t elementaryInfoCount;
 }PmtTable;
 
-
-typedef struct _TdtTable{
-	uint8_t table_id;
-	uint8_t section_syntax_indicator;
-	uint16_t section_length;
-	uint64_t mjd;
-  uint16_t day;
-	uint16_t month;
-  uint16_t year;
-  uint16_t primM;
-  uint16_t primY;
-  uint16_t wday;
-  uint8_t K;
-}TdtTable;
-
-typedef struct _TotTable{
-	uint8_t table_id;
-	uint8_t section_syntax_indicator;
-	uint16_t section_length;
-	uint16_t mjd;
-  uint8_t year;
-  uint8_t month;
-  uint8_t day;
-	uint16_t descriptors_loop_length;
-  localTimeDescriptorReview dsc[TABLES_MAX_NUMBER_OF_TOT_DSC];
-  uint8_t desc_cnt;
-}TotTable;
-
-typedef struct _LocalTimeDescriptor{
-    uint8_t cCh1;
-    uint8_t cCh2;
-    uint8_t cCh3;
-    uint8_t region;
-    uint8_t lt_polarity;
-    uint8_t lt_hours;
-    uint8_t lt_min;
-}localTimeDescriptor
-
-typedef struct _LocalTimeDescriptorReview{
-    uint8_t descriptor_tag;
-    uint8_t descriptor_length;
-    localTimeDescriptor lto_info[TABLES_MAX_NUMBER_OF_LOCAL_TIMES_DSC];
-    uint8_t info_cnt;
-}localTimeDescriptorReview;
-
 /**
  * @brief  Parse PAT header.
- *
+ * 
  * @param  [in]   patHeaderBuffer Buffer that contains PAT header
  * @param  [out]  patHeader PAT header
  * @return tables error code
@@ -145,7 +99,7 @@ ParseErrorCode parsePatHeader(const uint8_t* patHeaderBuffer, PatHeader* patHead
 
 /**
  * @brief  Parse PAT Service information.
- *
+ * 
  * @param  [in]   patServiceInfoBuffer Buffer that contains PAT Service info
  * @param  [out]  descriptor PAT Service info
  * @return tables error code
@@ -154,7 +108,7 @@ ParseErrorCode parsePatServiceInfo(const uint8_t* patServiceInfoBuffer, PatServi
 
 /**
  * @brief  Parse PAT Table.
- *
+ * 
  * @param  [in]   patSectionBuffer Buffer that contains PAT table section
  * @param  [out]  patTable PAT Table
  * @return tables error code
@@ -163,7 +117,7 @@ ParseErrorCode parsePatTable(const uint8_t* patSectionBuffer, PatTable* patTable
 
 /**
  * @brief  Print PAT Table
- *
+ * 
  * @param  [in]   patTable PAT table to be printed
  * @return tables error code
  */
@@ -204,12 +158,6 @@ ParseErrorCode parsePmtTable(const uint8_t* pmtSectionBuffer, PmtTable* pmtTable
  */
 ParseErrorCode printPmtTable(PmtTable* pmtTable);
 
-ParseErrorCode parseTdtTable(const uint8_t* tdtSectionBuffer,TdtTable* tdtTable);
-
-ParseErrorCode printTdtTable(TdtTable* tdtTable);
-
-ParseErrorCode parseTotTable(const uint8_t* totSectionBuffer,TotTable* totTable);
-
-ParseErrorCode printTotTable(TotTable* TotTable);
-
 #endif /* __TABLES_H__ */
+
+

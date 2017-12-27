@@ -1,14 +1,14 @@
 #include "stream_controller.h"
+#include "tables_parser.c"
 
 static PatTable *patTable;
-static TdtTable *tdtTable;
 static PmtTable *pmtTable;
-static totTable *totTable;
 static pthread_cond_t statusCondition = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t statusMutex = PTHREAD_MUTEX_INITIALIZER;
 
 static int32_t sectionReceivedCallback(uint8_t *buffer);
 static int32_t tunerStatusCallback(t_LockStatus status);
+static streamControllerErrorCallback callback=NULL;
 
 static uint32_t playerHandle = 0;
 static uint32_t sourceHandle = 0;
@@ -19,8 +19,9 @@ static uint8_t threadExit = 0;
 static bool changeChannel = false;
 static int16_t programNumber = 0;
 static ChannelInfo currentChannel;
+static uint32_t volumeNumber = 0;
 static bool isInitialized = false;
-static DateCallback dateReceivedCallback=NULL;
+static bool mutePressed=false;
 
 static struct timespec lockStatusWaitTime;
 static struct timeval now;
@@ -31,12 +32,12 @@ static pthread_mutex_t demuxMutex = PTHREAD_MUTEX_INITIALIZER;
 static void* streamControllerTask();
 static void removeSpaces(char* string);
 static void startChannel(int32_t channelNumber);
-static ConfigFileInfo configFile;
-static DateStr startDate;
-static StreamControllerError parseDateTables();
-static bool getDateTable=false;
 
-//add for loading config.ini
+static uint32_t frequency=0;
+static int8_t bandwidth=0;
+char module[8];
+
+
 
 StreamControllerError streamControllerInit()
 {
@@ -67,8 +68,8 @@ StreamControllerError streamControllerDeinit()
 		/* free demux filter */
 		Demux_Free_Filter(playerHandle, filterHandle);
 
-		/* remove audio stream */
-		Player_Stream_Remove(playerHandle, sourceHandle, streamHandleA);
+	/* remove audio stream */
+	Player_Stream_Remove(playerHandle, sourceHandle, streamHandleA);
 
 		/* remove video stream */
 		Player_Stream_Remove(playerHandle, sourceHandle, streamHandleV);
@@ -85,8 +86,6 @@ StreamControllerError streamControllerDeinit()
 		/* free allocated memory */
 		free(patTable);
 		free(pmtTable);
-		free(tdtTable);
-		free(totTable);
 
 		/* set isInitialized flag */
 		isInitialized = false;
@@ -128,6 +127,67 @@ StreamControllerError channelDown()
 		return SC_NO_ERROR;
 }
 
+StreamControllerError changeChannelByNumber(int16_t channelNumber){
+	programNumber=channelNumber;
+	changeChannel=true;
+	return SC_NO_ERROR;
+}
+
+StreamControllerError changeVolumeDown(){
+	if(volumeNumber<1){
+		volumeNumber=0;
+	}else{
+		volumeNumber--;
+	mutePressed=false;
+}
+
+StreamControllerError changeVolumeUp(){
+	volumeNumber++'
+	if(volumeNumber>10){
+		volumeNumber=10;
+	}
+	mutePressed=false;
+	return SC_NO_ERROR;
+}
+
+StreamControllerError volumeDown(){
+	if(volume>0){
+		volume--;
+		mute=false;
+	}
+	
+	return SC_NO_ERROR;
+
+}
+
+StreamControllerError volumeUp(){
+	if(volume<10){
+		volume++;
+		mute=false;
+	}
+	return SC_NO_ERROR;	
+}	
+
+StreamControllerError changeVolumeMute(){
+	if(mutePressed=false){
+		mutePressed=false;
+	}else{
+		mutePressed=true;
+	}
+	
+	return SC_NO_ERROR;
+}
+
+StreamControllerError volumeMute(){
+	if(mute){
+		volume=0;
+		mute=false;
+	}else{
+		volume!=0;
+		mute=true;
+	}
+	return SC_NO_ERROR;
+}
 StreamControllerError getChannelInfo(ChannelInfo* channelInfo)
 {
 		if (channelInfo == NULL)
@@ -154,10 +214,11 @@ void startChannel(int32_t channelNumber)
 		Demux_Free_Filter(playerHandle, filterHandle);
 
 		/* set demux filter for receive PMT table of program */
-		if(Demux_Set_Filter(playerHandle, patTable->patServiceInfoArray[channelNumber + 1].pid, 0x02, &filterHandle)){
+		if(Demux_Set_Filter(playerHandle, patTable->patServiceInfoArray[channelNumber + 1].pid, 0x02, &filterHandle))
+	{
 		printf("\n%s : ERROR Demux_Set_Filter() fail\n", __FUNCTION__);
 				return;
-		}
+	}
 
 		/* wait for a PMT table to be parsed*/
 		pthread_mutex_lock(&demuxMutex);
@@ -224,12 +285,7 @@ void startChannel(int32_t channelNumber)
 		currentChannel.programNumber = channelNumber + 1;
 		currentChannel.audioPid = audioPid;
 		currentChannel.videoPid = videoPid;
-
-			if(getDateTable==false){
-					parseDateTables();
-			}
 }
-
 
 void* streamControllerTask()
 {
@@ -260,8 +316,6 @@ void* streamControllerTask()
 				printf("\n%s : ERROR Tuner_Init() fail\n", __FUNCTION__);
 				free(patTable);
 				free(pmtTable);
-				free(tdtTable);
-				free(totTable);
 				return (void*) SC_ERROR;
 		}
 
@@ -272,17 +326,15 @@ void* streamControllerTask()
 	}
 
 		/* lock to frequency */
-		if(!Tuner_Lock_To_Frequency(configFile.Frequency, configFile.Bandwidth, configFile.Modul))
+		if(!Tuner_Lock_To_Frequency(frequency, bandwidth, DVB_T))
 		{
-				printf("\n%s: INFO Tuner_Lock_To_Frequency(): %d Hz - success!\n",__FUNCTION__,configFile.Frequency);
+				printf("\n%s: INFO Tuner_Lock_To_Frequency(): %d Hz - success!\n",configFile.Frequency);
 		}
 		else
 		{
-				printf("\n%s: ERROR Tuner_Lock_To_Frequency(): %d Hz - fail!\n",__FUNCTION__,configFile.Frequency);
+				printf("\n%s: ERROR Tuner_Lock_To_Frequency(): %d Hz - fail!\n",configFile.Frequency);
 				free(patTable);
 				free(pmtTable);
-				free(tdtTable);
-				free(totTable);
 				Tuner_Deinit();
 				return (void*) SC_ERROR;
 		}
@@ -338,8 +390,6 @@ void* streamControllerTask()
 		printf("\n%s:ERROR Lock timeout exceeded!\n", __FUNCTION__);
 				free(patTable);
 				free(pmtTable);
-				free(tdtTable);
-				free(totTable);
 		Player_Deinit(playerHandle);
 				Tuner_Deinit();
 				return (void*) SC_ERROR;
@@ -409,110 +459,43 @@ int32_t tunerStatusCallback(t_LockStatus status)
 		return 0;
 }
 
-StreamControllerError loadInfo(){
-	if(getConfigFile("config.ini", &configFile)){
-		printf("Error loading!\n");
-		return SC_ERROR;
-	}
-	programNumber=configFile.programNumber;
-	return SC_NO_ERROR;
-}
+StreamControllerError parseConfigFile(){
 
+       	FILE* filename;
+	filename=fopen("config.txt","r");
 
-/*StreamControllerError getConfigFile(char* filename, ConfigFileInfo* configFileInfo){
-	  FILE* f;
-		char line[LINELEN];
-		char* word;
+		while(!feof(filename){
+			if(fscanf(filename,"frequency:%d\nbandwidth:%d\nmodule:%s\nprogram_number:%d ",&frequency, &bandwidth, module, &program_number)){
+		printf("Config file successfully parsed!\n");
+		break;
+		}else{
+			printf("Check config file!\n");
+			return SC_ERROR;
 
-		if((f=fopen(filename,"r"))==NULL){
-		    printf("Error opening file\n");
-				return SC_ERROR;
 		}
-
-		while(fgets(line,LINELEN,f)!=NULL){
-				word=strtok(line,"-");
-				removeSpaces(word);
-
-				if(strcmp(word,"frequency")==0){
-						printf("Print 1\n");
-						word=strtok(NULL,"-");
-						removeSpaces(word);
-   						configFileInfo->Frequency=atoi(word);
-
-				}else if(strcmp(word,"bandwidth")==0){
-						printf("Print 2\n");
-						word=strtok(NULL,"-");
-						removeSpaces(word);
-						configFileInfo->Bandwidth=atoi(word);
-
-				}else if(strcmp(word,"module")==0){
-					printf("Print 3\n");
-					word=strtok(NULL,"-");
-					removeSpaces(word);
-
-
-					if(strcmp(word,"DVB_T")){
-							configFileInfo->Modul=DVB_T;
-					}else{
-						printf("Print 4\n");
-						return SC_ERROR;
-					}
-
-				}else if(strcmp(word,"program_number")==0){
-					printf("Print 5\n");
-					word=strtok(NULL,"-");
-					removeSpaces(word);
-					configFileInfo->programNumber=atoi(word);
-				}
-		}
-	fclose(f);
+fclose(filename);
 
 return SC_NO_ERROR;
 }
 
-static void removeSpaces(char* word)
-{
-	int stringLen = strlen(word);
-	int i = 0;
-	int j = 0;
-	int k = stringLen - 1;
-	char* startString = word;
-	char* returnString;
-
-	while (startString[i] == 32)
-	{
-		i++;
+StreamControllerError checkConfigFile(){
+	if(frequency!=(uint32_t) 754000000){
+		printf("Check frequency\n");
+		return SC_ERROR;
 	}
-
-	while ((startString[k] == 32) & (startString[k] != '\0'))
-	{
-		k--;
+	if(bandwidth!=(uint8_t) 8){
+		printf("Check bandwidth\n");
+		return SC_ERROR;
 	}
-
-	for (j = 0; j < (k - i); j++)
-	{
-		word[j] = startString[j+i];
+	if(strcmp("DVB_T",module)!=0){
+		printf("Check module\n");
+		return SC_ERROR;
 	}
-
-	word[k-i+1] = '\0';
-}
-*/
-
-void changeChannelByNumber(int32_t channelNumber){
-		if((channelNumber > -1)&&(channelNumber < patTable->serviceInfoCount)){
-				startChannel(channelNumber);
-		}
-}
-
-StreamControllerError parseDateTables(){
-	struct timeval varDate;
-
-	Demux_Free_Filter(playerHandle,filterHandle);
-
-	if(Demux_Free_Filter,playerHandle,0x0014,0x70,&filterHandle)){
-			printf("\n%s:ERROR Demux_Set_Filter() fail\n",__FUNCTION__);
-			return SC_ERROR;
+	if(programNumber<=0 || programNumber>7){
+		printf("Not in range. Check program number\n");	
+		return SC_ERROR;
 	}
-	pthread_mutex_lock(&demuxMutex);
+	return SC_NO_ERROR;
+}		
 
-}
+

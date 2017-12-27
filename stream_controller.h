@@ -13,8 +13,9 @@
 
 #define DESIRED_FREQUENCY 754000000	        /* Tune frequency in Hz */
 #define BANDWIDTH 8    				        /* Bandwidth in Mhz */
-#define LINELEN 50
 
+static uint8_t volume=0;
+static bool mute=false;
 /**
  * @brief Structure that defines stream controller error
  */
@@ -35,25 +36,6 @@ typedef struct _ChannelInfo
     int16_t videoPid;
 }ChannelInfo;
 
-//struct for tot table
-typedef struct _DateStr{
-    uint8_t years;
-    uint8_t months;
-    uint8_t days;
-}DateStr;
-
-typedef struct _ConfigFileInfo{
-    int16_t Frequency;
-    int16_t Bandwidth;
-    int16_t programNumber;
-    t_Module Modul;
-}ConfigFileInfo;
-
-typedef struct _DateStr{
-  uint8_t years;
-  uint8_t months;
-  uint8_t seconds;
-}dateStr;
 /**
  * @brief Initializes stream controller module
  *
@@ -90,12 +72,21 @@ StreamControllerError channelDown();
  */
 StreamControllerError getChannelInfo(ChannelInfo* channelInfo);
 
-StreamControllerError loadInfo();
+StreamControllerError changeChannelByNumber(int16_t channelNumber);
 
-void changeChannelByNumber(int32_t changeChannel);
+StreamControllerError volumeUp();
 
-typedef void(*DateCallback)(DateStr* dateStr);
+StreamControllerError volumeDown();
 
-StreamControllerError registerDateCallback(DateCallback dateCallback);
+StreamControllerError volumeMute();
 
+StreamControllerError changeVolumeUp();
+
+StreamControllerError changeVolumeDown();
+
+StreamControllerError changeVolumeMute();
+
+StreamControllerError parseConfigFile();
+
+StreamControllerError checkConfigFile();
 #endif /* __STREAM_CONTROLLER_H__ */
