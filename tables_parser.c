@@ -314,7 +314,7 @@ ParseErrorCode parseTdtTable(const* uint8_t tdtSectionBuffer,TdtTable* tdtTable)
     higher8Bits=(uint8_t) *(tdtSectionBuffer+1);
     lower8Bits=(uint8_t) *(tdtSectionBuffer+2);
     all16Bits=(uint16_t) *((higher8Bits<<8)+lower8Bits);
-    tdtTable->all16Bits & 0x0FFF;
+    tdtTable->section_length = all16Bits & 0x0FFF;
 
     higher8Bits=(uint8_t) *(tdtSectionBuffer+3);
     lower8Bits=(uint8_t) *(tdtSectionBuffer+4);
